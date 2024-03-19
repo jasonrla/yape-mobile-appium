@@ -13,7 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.yape_mobile.model.Reservation;
 import com.yape_mobile.model.User;
-import com.yape_mobile.pages.LoginPage;
+import com.yape_mobile.pages.SignInPage;
 import com.yape_mobile.pages.PropertyDetailsPage;
 import com.yape_mobile.pages.HomePage;
 import com.yape_mobile.pages.SearchResultsPage;
@@ -28,7 +28,7 @@ import io.appium.java_client.android.AndroidDriver;
 public class TestSetup {
     private AndroidDriver<MobileElement> driver;
     private HomePage homePage;
-    private LoginPage loginPage;
+    private SignInPage loginPage;
     private SearchResultsPage searchResultsPage;
     private PropertyDetailsPage propertyDetailsPage;
     private RoomSelectionPage roomSelectionPage;
@@ -38,7 +38,7 @@ public class TestSetup {
 
     public TestSetup() throws MalformedURLException, URISyntaxException, FileNotFoundException {
         setupDriver();
-        JsonObject jsonObject = readJsonFile("src/test/java/resources/data.json");
+        JsonObject jsonObject = readJsonFile(Urls.DATA);
         User user = createUser(jsonObject);
         Reservation reservation = createReservation(jsonObject);
         setupPages(user, reservation);
@@ -68,13 +68,13 @@ public class TestSetup {
     }
 
     private void setupPages(User user, Reservation reservation) {
-        homePage = new HomePage(driver, user, reservation);
-        loginPage = new LoginPage(driver);
-        searchResultsPage = new SearchResultsPage(driver, user, reservation);
-        propertyDetailsPage = new PropertyDetailsPage(driver, user, reservation);
-        roomSelectionPage = new RoomSelectionPage(driver, user, reservation);
+        homePage = new HomePage(driver, reservation);
+        loginPage = new SignInPage(driver);
+        searchResultsPage = new SearchResultsPage(driver, reservation);
+        propertyDetailsPage = new PropertyDetailsPage(driver);
+        roomSelectionPage = new RoomSelectionPage(driver);
         registrationPage = new RegistrationPage(driver, user, reservation);
-        bookingOverviewPage = new BookingOverviewPage(driver, user, reservation);
+        bookingOverviewPage = new BookingOverviewPage(driver, reservation);
         finishBooking = new FinishBooking(driver, user, reservation);
     }
 
@@ -86,7 +86,7 @@ public class TestSetup {
         return homePage;
     }
 
-    public LoginPage getLoginPage() {
+    public SignInPage getLoginPage() {
         return loginPage;
     }
 

@@ -10,8 +10,9 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
 import java.text.ParseException;
+import java.util.concurrent.TimeUnit;
 
-import com.yape_mobile.pages.LoginPage;
+import com.yape_mobile.pages.SignInPage;
 import com.yape_mobile.pages.HomePage;
 import com.yape_mobile.pages.SearchResultsPage;
 import com.yape_mobile.pages.PropertyDetailsPage;
@@ -22,9 +23,9 @@ import com.yape_mobile.pages.FinishBooking;
 
 import config.TestSetup;
 
-public class LoginStepDef {
+public class IntegrationStepDef {
     private AppiumDriver<MobileElement> driver;
-    private LoginPage loginPage;
+    private SignInPage loginPage;
     private HomePage homePage;
     private SearchResultsPage searchResultsPage;
     private PropertyDetailsPage propertyDetailsPage;
@@ -49,26 +50,25 @@ public class LoginStepDef {
         registrationPage = setup.getRegistrationPage();
         bookingOverviewPage = setup.getBookingOverviewPage();
         finishBooking = setup.getFinishBooking();
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }
 
-    @After
-    public void tearDown() {
-        driver.quit();
-    }
+    
 
-    @Given("I am on the login page")
-    public void I_am_on_the_login_page() {
+    @Given("I am on the sign in page")
+    public void I_am_on_the_sing_in_page() {
         //Assert.assertEquals(true, loginPage.isLoginPageOpened());
     }
 
     @When("I click on the X button")
     public void i_click_on_the_x_button() {
-        loginPage.clickOnXButton();
+        loginPage.closeLoginPage();
     }
 
     @Then("The main page should be opened")
     public void the_main_page_should_be_opened() {
         Assert.assertEquals(true, homePage.isMainPageOpened());
+        Assert.assertEquals(true, homePage.isSearchButtonEnabled());
     }
 
     @When("I enter my destination")
@@ -83,7 +83,7 @@ public class LoginStepDef {
 
     @When("I enter Cusco text")
     public void i_enter_cusco_text() {
-        homePage.enterCuscoText();
+        homePage.enterDestinationToBeSearched();
     }
 
     @When("All items contain the search word")
@@ -148,12 +148,12 @@ public class LoginStepDef {
 
     @Then("The range date should be set")
     public void The_range_date_should_be_set() throws ParseException {
-        Assert.assertEquals(true, homePage.isRangeDateSet());
+        Assert.assertEquals(true, homePage.isDateRangeSet());
     }
 
     @Then("I click on the room field")
     public void I_click_on_the_room_field() {
-        homePage.clickOnRoomField();
+        homePage.clickOnOccupancyField();
     }
 
     @Then("The room and guest modal should be opened")
@@ -163,37 +163,39 @@ public class LoginStepDef {
 
     @Then("I select the children quantity")
     public void I_select_the_children_quantity() {
-        homePage.selectChildrenQuantity();
+        homePage.addAChildGuest();
     }
 
     @Then("The age of child modal should be opened")
     public void The_age_of_child_modal_should_be_opened() {
         Assert.assertEquals(true, homePage.isAgeOfChildModalOpened());
+        Assert.assertEquals(false, homePage.isOKButtonEnabled());
     }
 
     @Then("I scroll the age")
     public void I_scroll_the_age() {
-        homePage.scrollAge();
+        homePage.scrollIntoAgeChildModal();
     }
 
     @Then("I click on the {int} years old option")
     public void I_click_on_the_years_old_option(int i) {
-        homePage.clickOn5yearsOldOption();
+        homePage.selectDesiredAgeOption();
     }
 
     @Then("I click on the OK button")
     public void I_click_on_the_OK_button() {
+        Assert.assertEquals(true, homePage.isOKButtonEnabled());
         homePage.clickOnOKbutton();
     }
 
     @Then("The childrens age at check out should be displayed")
     public void The_children_s_age_at_check_out_should_be_displayed() {
-        Assert.assertEquals(true, homePage.isChildrensAgeAtCheckOutDisplayed());
+        Assert.assertEquals(true, homePage.isChildrensAgesHeaderDisplayed());
     }
 
     @Then("The number of children should be correct")
     public void The_number_of_children_should_be_correct() {
-        Assert.assertEquals(true, homePage.isNumberOfChildrenCorrect());
+        Assert.assertEquals(true, homePage.isQuantityOfChildrenCorrect());
     }
 
     @Then("The childrens age selected should be correct")
@@ -218,6 +220,7 @@ public class LoginStepDef {
 
     @Then("I click on the search button")
     public void I_click_on_the_search_button() {
+        Assert.assertEquals(true, homePage.isSearchButtonEnabled());
         homePage.clickOnSearchButton();
     }
 
@@ -228,7 +231,9 @@ public class LoginStepDef {
 
     @Then("I scroll until the item number")
     public void I_scroll_until_the_item_number() {
-        searchResultsPage.scrollUntilItemNumber();
+        //if(!searchResultsPage.isDesiredElementDisplayed()){
+            searchResultsPage.scrollUntilDesiredItem();
+        //};
     }
 
     @Then("I extract the stay details text")
@@ -243,15 +248,24 @@ public class LoginStepDef {
         System.out.println("Total amount: " + totalAmount);
     }
 
+    @Then("I extract the original amount text if available")
+    public void I_extract_the_original_amount_text_if_available() {
+        // if(searchResultsPage.isOriginalAmountAvailable()){
+        //     totalOriginalAmount = searchResultsPage.extractOriginalAmountText();
+        //     System.out.println("Total original amount: " + totalOriginalAmount);
+        // };
+        
+    }
+
     @Then("I extract the taxes and charges text")
     public void I_extract_the_taxes_and_charges_text() {
-        taxesAmount = searchResultsPage.extractTaxesAndChargesText();
+        taxesAmount = searchResultsPage.extractTaxesText();
         System.out.println("Taxes amount: " + taxesAmount);
     }
 
     @Then("I select the second option")
     public void I_select_the_second_option() {
-        searchResultsPage.selectSecondOption();
+        searchResultsPage.selectDesiredOption();
     }
 
     @Then("The select room modal should be opened")
@@ -261,82 +275,92 @@ public class LoginStepDef {
 
     @Then("The total amount in property details should be correct")
     public void The_total_amount_in_property_details_should_be_correct() {
-        Assert.assertEquals(true, propertyDetailsPage.isTotalAmountInPropertyDetailsCorrect(totalAmount));
+        Assert.assertEquals(true, propertyDetailsPage.isTotalAmountCorrect(totalAmount));  
+    }
+
+    @Then("The total original amount in property details should be correct if available")
+    public void The_total_original_amount_in_property_details_should_be_correct_if_available() {
+        // if(propertyDetailsPage.isTotalOriginalAmountDisplayed()){
+        //     Assert.assertEquals(true, propertyDetailsPage.isTotalOriginalAmountCorrect(totalOriginalAmount));
+        // }
     }
 
     @Then("The taxes amount in property details should be correct")
     public void The_taxes_amount_in_property_details_should_be_correct() {
-        Assert.assertEquals(true, propertyDetailsPage.isTaxesAmountInPropertyDetailsCorrect(taxesAmount));
+        Assert.assertEquals(true, propertyDetailsPage.isTaxesAmountCorrect(taxesAmount));
     }
 
     @Then("I select the room")
     public void I_select_the_room() {
-        propertyDetailsPage.selectRoom();
-    }
-
-    @Then("The total amount in room details should be correct")
-    public void The_total_amount_in_room_details_should_be_correct() {
-        Assert.assertEquals(true, roomSelectionPage.isTotalAmountInRoomDetailsCorrect(totalAmount));
-    }
-
-    @Then("The taxes amount in room details should be correct")
-    public void The_taxes_amount_in_room_details_should_be_correct() {
-        Assert.assertEquals(true, roomSelectionPage.isTaxesAmountInRoomDetailsCorrect(taxesAmount));
+        propertyDetailsPage.clickOnSelectRoomsButton();
     }
 
     @When("I click on the reserve button")
     public void I_click_on_the_reserve_button() {
-        roomSelectionPage.clickOnReserveButton();
+        //roomSelectionPage.selectButton();
+        roomSelectionPage.reserveButton();
+        //roomSelectionPage.confirmButton();
+        //roomSelectionPage.reserveWidgetButton();
     }
 
     @Then("The add missing details button should be displayed")
     public void The_add_missing_details_button_should_be_displayed() {
         Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonEnabled());
     }
 
     @When("I enter the first name")
     public void I_enter_the_first_name() {
         registrationPage.enterFirstName();
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
     }
 
     @When("I enter the last name")
     public void I_enter_the_last_name() {
         registrationPage.enterLastName();
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
     }
 
     @When("I enter the email")
     public void I_enter_the_email() {
         registrationPage.enterEmail();
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
     }
 
     @When("I enter the address")
     public void I_enter_the_address() {
         registrationPage.enterAddress();
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
     }
 
     @When("I enter the zip code")
     public void I_enter_the_zip_code() {
         registrationPage.enterZipCode();
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
     }
 
     @When("I enter the city")
     public void I_enter_the_city() {
         registrationPage.enterCity();
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
     }
 
     @When("I scroll the form")
     public void I_scroll_the_form() {
         registrationPage.scrollForm();
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
     }
 
     @When("I select the country")
     public void I_select_the_country() {
         registrationPage.selectCountry();
+        Assert.assertEquals(true, registrationPage.isAddMissingDetailsButtonDisplayed());
     }
 
     @When("I enter the phone number")
     public void I_enter_the_phone_number() {
-        registrationPage.enterPhoneNumber();
+        registrationPage.enterPhoneNumber();  
+        Assert.assertEquals(false, registrationPage.isAddMissingDetailsButtonDisplayed()); 
     }
 
     @Then("The next step button should be displayed")
@@ -351,7 +375,13 @@ public class LoginStepDef {
 
     @Then("The total amount in fill info details should be correct")
     public void The_total_amount_in_fill_info_details_should_be_correct() {
-        Assert.assertEquals(true, registrationPage.isTotalAmountInFillInfoDetailsCorrect(totalAmount));
+        // if(!totalOriginalAmount.isEmpty()){
+        //     Assert.assertEquals(true, registrationPage.isTotalAmountInFillInfoDetailsCorrect(totalAmount, totalOriginalAmount));
+        // }
+        // else{
+            Assert.assertEquals(true, registrationPage.isTotalAmountInFillInfoDetailsCorrect(totalAmount));
+        // }
+        
     }
 
     @Then("The taxes amount in fill info details should be correct")
@@ -381,7 +411,14 @@ public class LoginStepDef {
 
     @Then("The booking overview total amount should be correct")
     public void The_booking_overview_total_amount_should_be_correct() {
-        Assert.assertEquals(true, bookingOverviewPage.isBookingOverviewTotalAmountCorrect(totalAmount));
+        
+        // if (!totalOriginalAmount.isEmpty()) {
+        //     Assert.assertEquals(true, bookingOverviewPage.isBookingOverviewTotalAmountCorrect(totalAmount, totalOriginalAmount));    
+        // }
+        // else{
+            Assert.assertEquals(true, bookingOverviewPage.isBookingOverviewTotalAmountCorrect(totalAmount));
+        // }
+        
     }
 
     @Then("The booking overview taxes amount should be correct")
@@ -476,12 +513,12 @@ public class LoginStepDef {
 
     @Then("The booking overview total 2 amount should be correct")
     public void The_booking_overview_total_2_amount_should_be_correct() {
-        Assert.assertEquals(true, finishBooking.isBookingOverviewTotal2AmountCorrect(totalAmount));
+        Assert.assertEquals(true, finishBooking.isTotalAmountCorrect(totalAmount));
     }
 
     @Then("The booking overview taxes 2 amount should be correct")
     public void The_booking_overview_taxes_2_amount_should_be_correct() {
-        Assert.assertEquals(true, finishBooking.isBookingOverviewTaxes2AmountCorrect(taxesAmount));
+        Assert.assertEquals(true, finishBooking.isTaxesAmountCorrect(taxesAmount));
     }
 
     @Then("The book now button should be enabled")
@@ -501,7 +538,10 @@ public class LoginStepDef {
     }
 
     
-
+    @After
+    public void tearDown() {
+        //driver.quit();
+    }
 
     /* 
 

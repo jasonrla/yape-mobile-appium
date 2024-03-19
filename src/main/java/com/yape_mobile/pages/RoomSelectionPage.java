@@ -1,44 +1,124 @@
 package com.yape_mobile.pages;
 
-import org.openqa.selenium.By;
+import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.WebElement;
-
-import com.yape_mobile.model.Reservation;
-import com.yape_mobile.model.User;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 
 public class RoomSelectionPage extends BasePage {
 
-    private final User user;
-    private final Reservation reservation;
+    @FindBy(id = "com.booking:id/recommended_block_subtotal_price_view")
+    private WebElement totalAmountElement;
 
-    public RoomSelectionPage(AppiumDriver<MobileElement> driver, User user, Reservation reservation) {
+    @FindBy(id = "com.booking:id/recommended_block_subtotal_taxes_charges_view")
+    private WebElement taxesAmountElement;
+
+    @FindBy(id = "com.booking:id/recommended_block_reserve_button")
+    private WebElement reserveButton;
+
+    @FindBy(id = "com.booking:id/select_room_cta")
+    private WebElement selectRoomsButton;
+
+    @FindBy(id = "com.booking:id/rooms_item_select_text_view")
+    private WebElement selectAndCustomizeButton;
+
+    @FindBy(id = "com.booking:id/rooms_item_select_text_view")
+    private WebElement selectButton;
+
+    @FindBy(id = "com.booking:id/room_pref_select")
+    private WebElement confirmButton;
+
+    @FindBy(xpath = "//android.widget.Button[@resource-id='com.booking:id/main_action']")
+    private WebElement reserveWidgetButton;
+
+    public RoomSelectionPage(AppiumDriver<MobileElement> driver) {
         super(driver);
-        this.user = user;
-        this.reservation = reservation;
+        PageFactory.initElements(driver, this);
     }
 
-    public boolean isTotalAmountInRoomDetailsCorrect(String totalAmount){
-        WebElement elem = driver.findElement(By.id("com.booking:id/recommended_block_subtotal_price_view"));
-        System.out.println("total amount Room: " + elem.getText() + " expected: " + totalAmount);
-        return elem.getText().equals(totalAmount);   
+    public boolean isTotalAmountCorrect(String totalAmount){
+        return totalAmountElement.getText().equals(totalAmount);   
     }
 
-    public boolean isTaxesAmountInRoomDetailsCorrect(String taxes){
-        WebElement elem = driver.findElement(By.id("com.booking:id/recommended_block_subtotal_taxes_charges_view"));
-        System.out.println("taxe amount Room: " + elem.getText() + " expected: " + taxes);
-        return elem.getText().equals(taxes);   
+    public boolean isTaxesAmountCorrect(String taxes){
+        return taxesAmountElement.getText().equals(taxes);   
     }
 
-    //validar fechas room details
-    //xpath -> //android.widget.TextView[contains(@text,"Choose Your Stay")]
-    // Choose Your Stay
-    //May 7 - May 14
-    
+    public boolean isReserveButtonDisplayed(){
+        return reserveButton.isDisplayed();
+    }
+
     public void clickOnReserveButton(){
-        driver.findElement(By.xpath("//androidx.recyclerview.widget.RecyclerView[@resource-id='com.booking:id/rooms_recycler_view']/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.LinearLayout[1]"));
-        driver.findElement(By.id("com.booking:id/recommended_block_reserve_button")).click();
+        reserveButton.click();;
     }
+
+    public boolean isSelectRoomsButtonDisplayed(){
+        return selectRoomsButton.isDisplayed();
+    }
+
+    public void clickOnSelectRoomsButton(){
+        selectRoomsButton.click();
+    }
+
+    public boolean isSelectAndCustomizeButtonDisplayed(){
+        return selectAndCustomizeButton.isDisplayed();
+    }
+
+    public void clickOnSelectAndCustomizeButton(){
+        selectAndCustomizeButton.click();
+    }
+
+    public boolean isSelectButtonDisplayed(){
+        return selectButton.isDisplayed();
+    }
+
+    public void clickOnSelectButton(){
+        selectButton.click();
+    }
+
+    public boolean isConfirmButtonDisplayed(){
+        return confirmButton.isDisplayed();
+    }
+
+    public void clickOnConfirmButton(){
+        confirmButton.click();
+    }
+
+    public boolean isReserveWidgetButtonDisplayed(){
+        return reserveWidgetButton.isDisplayed();
+    }
+
+    public void clickOnReserveWidgetButton(){
+        reserveWidgetButton.click();
+    }
+
+    public void selectButton(){
+        driver.manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS);
+        if(isSelectButtonDisplayed()){
+            clickOnSelectButton();
+        }
+    }
+
+    public void reserveButton(){
+        if(isReserveButtonDisplayed()){
+            clickOnReserveButton();
+        }
+    }
+
+    public void confirmButton(){
+        if(isConfirmButtonDisplayed()){
+            clickOnConfirmButton();
+        }
+    }
+
+    public void reserveWidgetButton(){
+        if(isReserveWidgetButtonDisplayed()){
+            clickOnReserveWidgetButton();
+        }
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+    }
+
 }

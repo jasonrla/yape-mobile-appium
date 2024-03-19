@@ -1,56 +1,56 @@
 package com.yape_mobile.pages;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
-import com.yape_mobile.model.Reservation;
-import com.yape_mobile.model.User;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 
 public class PropertyDetailsPage extends BasePage{
 
-    private final User user;
-    private final Reservation reservation;
+    @FindBy(id = "com.booking:id/fragment_container")
+    private WebElement roomModalElement;
 
-    public PropertyDetailsPage(AppiumDriver<MobileElement> driver, User user, Reservation reservation) {
+    @FindBy(id = "com.booking:id/price_view_taxes_and_charges")
+    private WebElement taxesAmountElement;
+
+    @FindBy(id = "com.booking:id/price_view_price")
+    private WebElement totalAmountElement;
+
+    @FindBy(id = "com.booking:id/price_view_rack_rate")
+    private WebElement totalOriginalAmountElement;
+
+    @FindBy(id = "com.booking:id/select_room_cta")
+    private WebElement roomButtonElement;
+
+    public PropertyDetailsPage(AppiumDriver<MobileElement> driver) {
         super(driver);
-        this.user = user;
-        this.reservation = reservation;
+        PageFactory.initElements(driver, this);
     }
 
     public boolean isSelectRoomModalOpened() {
-        WebElement elem = driver.findElement(By.id("com.booking:id/fragment_container"));   
-        return elem.isDisplayed();
+        return roomModalElement.isDisplayed();
     }
 
-    public boolean isTotalAmountInPropertyDetailsCorrect(String totalAmount){
-        WebElement elem = driver.findElement(By.id("com.booking:id/price_view_price"));  
-        //cuando hay oferta:
-        // (//android.widget.TextView[@resource-id='com.booking:id/price_view_price])[2]
-        System.out.println("total amount Property details: " + elem.getText() + " expected: " + totalAmount);
-        return elem.getText().equals(totalAmount);   
+    public boolean isTotalOriginalAmountDisplayed(){
+        return totalOriginalAmountElement.isDisplayed();  
     }
 
-    public boolean isTaxesAmountInPropertyDetailsCorrect(String taxes){
-        WebElement elem = driver.findElement(By.id("com.booking:id/price_view_taxes_and_charges"));
-        System.out.println("taxe amount Propery details: " + elem.getText() + " expected: " + taxes);
-        return elem.getText().equals(taxes);   
+    public boolean isTotalOriginalAmountCorrect(String totalOriginalAmount){
+        return totalOriginalAmountElement.getText().equals(totalOriginalAmount);   
     }
 
-    //   validar fechas 
-    //   com.booking:id/toolbar_subtitle_textView   May 7 - May 14
-    //   com.booking:id/checkin_display  Tue, May 07
-    //   com.booking:id/checkout_display Tue, May 14
+    public boolean isTotalAmountCorrect(String totalAmount){
+        return totalAmountElement.getText().equals(totalAmount);   
+    }
 
+    public boolean isTaxesAmountCorrect(String taxes){
+        return taxesAmountElement.getText().equals(taxes);   
+    }
 
-    public void selectRoom(){
-        driver.findElement(By.xpath("//android.widget.FrameLayout[@resource-id='com.booking:id/property_availability_cta_facetframe']/android.view.ViewGroup")).click();
-    }    
+    public void clickOnSelectRoomsButton(){
+        roomButtonElement.click();
+    }
+
 }

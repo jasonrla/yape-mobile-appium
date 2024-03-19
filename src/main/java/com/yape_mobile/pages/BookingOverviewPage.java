@@ -2,40 +2,56 @@ package com.yape_mobile.pages;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import org.openqa.selenium.By;
+import java.util.logging.Logger;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 
 import com.yape_mobile.model.Reservation;
-import com.yape_mobile.model.User;
 
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 
 public class BookingOverviewPage extends BasePage{
 
-    private final User user;
     private final Reservation reservation;
+    private static final Logger logger = Logger.getLogger(BookingOverviewPage.class.getName());
 
-    public BookingOverviewPage(AppiumDriver<MobileElement> driver, User user, Reservation reservation) {
+    @FindBy (id = "com.booking:id/checkin_date")
+    private WebElement checkinDateElement;
+
+    @FindBy (id = "com.booking:id/checkout_date")
+    private WebElement checkoutDateElement;
+
+    @FindBy (id = "com.booking:id/bp_price_summary_total_price_value") 
+    private WebElement totalAmountElement;
+
+    @FindBy (id = "com.booking:id/bp_price_summary_taxes_and_charges")
+    private WebElement taxesAmountElement;
+
+    @FindBy (xpath = "(//android.widget.TextView[@resource-id='com.booking:id/title'])[2]")
+    private WebElement totalAmountFooter;
+
+    @FindBy (xpath = "(//android.widget.TextView[@resource-id='com.booking:id/subtitle'])[2]")
+    private WebElement taxesAmountFooter;
+
+    @FindBy (id = "com.booking:id/action_button")
+    private WebElement finalStepButton;
+
+    public BookingOverviewPage(AppiumDriver<MobileElement> driver, Reservation reservation) {
         super(driver);
-        this.user = user;
         this.reservation = reservation;
+        PageFactory.initElements(driver, this);
     }
 
-    // check Booking Overview
-    //id com.booking:id/checkin_date Tue May 07 2024
-    //id com.booking:id/checkout_date  Tue May 14 2024
-
     public boolean isCheckInDateCorrect() throws Exception {
+        logger.info("Check in date");
         SimpleDateFormat originalFormat = new SimpleDateFormat("dd MMM yyyy");
         SimpleDateFormat targetFormat = new SimpleDateFormat("EEE MMM dd yyyy");
         Date date = originalFormat.parse(reservation.getStartDate());
         String formattedCheckInDate = targetFormat.format(date);
     
-        WebElement elem = driver.findElement(By.id("com.booking:id/checkin_date"));
-        System.out.println("check in date: " + elem.getText() + " expected: " + formattedCheckInDate);
-        return elem.getText().equals(formattedCheckInDate);   
+        return checkinDateElement.getText().equals(formattedCheckInDate);   
     }
     
     public boolean isCheckOutDateCorrect() throws Exception {
@@ -43,44 +59,32 @@ public class BookingOverviewPage extends BasePage{
         SimpleDateFormat targetFormat = new SimpleDateFormat("EEE MMM dd yyyy");
         Date date = originalFormat.parse(reservation.getEndDate());
         String formattedCheckOutDate = targetFormat.format(date);
-    
-        WebElement elem = driver.findElement(By.id("com.booking:id/checkout_date"));
-        System.out.println("check out date: " + elem.getText() + " expected: " + formattedCheckOutDate);
-        return elem.getText().equals(formattedCheckOutDate);   
+
+        return checkoutDateElement.getText().equals(formattedCheckOutDate);   
     }
 
-
-    //total price:  com.booking:id/bp_price_summary_total_price_value 
-    //taxes: com.booking:id/bp_price_summary_taxes_and_charges
-
     public boolean isBookingOverviewTotalAmountCorrect(String totalAmount){
-        WebElement elem = driver.findElement(By.id("com.booking:id/bp_price_summary_total_price_value"));
-        System.out.println("total amount Booking Overview: " + elem.getText() + " expected: " + totalAmount);
-        return elem.getText().equals(totalAmount);   
+        return totalAmountElement.getText().contains(totalAmount);   
+    }
+
+    public boolean isBookingOverviewTotalAmountCorrect(String totalAmount, String totalOriginalAmount){
+        return totalAmountElement.getText().equals(totalOriginalAmount + " " + totalAmount);   
     }
 
     public boolean isBookingOverviewTaxesAmountCorrect(String taxesAmount){
-        WebElement elem = driver.findElement(By.id("com.booking:id/bp_price_summary_taxes_and_charges"));
-        System.out.println("total amount Booking Overview: " + elem.getText() + " expected: " + taxesAmount);
-        return elem.getText().equals(taxesAmount);   
+        return taxesAmountElement.getText().equals(taxesAmount);   
     }
 
-    //total price: //android.widget.TextView[@resource-id="com.booking:id/title" and @text="US$3,674"]
-    //taxes: //android.widget.TextView[@resource-id="com.booking:id/subtitle" and @text="+ US$1,566 taxes and charges"]
     public boolean isTotalAmountCorrect(String totalAmount){
-        WebElement elem = driver.findElement(By.xpath("(//android.widget.TextView[@resource-id='com.booking:id/title'])[2]"));
-        System.out.println("total amount Booking Overview Footter: " + elem.getText() + " expected: " + totalAmount);
-        return elem.getText().equals(totalAmount);   
+        return totalAmountFooter.getText().equals(totalAmount);   
     }
 
     public boolean isTaxesAmountCorrect(String taxesAmount){
-        WebElement elem = driver.findElement(By.xpath("(//android.widget.TextView[@resource-id='com.booking:id/subtitle'])[2]"));
-        System.out.println("taxes amount Booking Overview Footter: " + elem.getText() + " expected: " + taxesAmount);
-        return elem.getText().equals(taxesAmount);   
+        return taxesAmountFooter.getText().equals(taxesAmount);   
     }
 
     public void clickOnFinalStepButton(){
-        driver.findElement(By.id("com.booking:id/action_button")).click();
+        finalStepButton.click();
     }
 
 }

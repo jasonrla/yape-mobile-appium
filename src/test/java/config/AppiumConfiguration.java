@@ -13,8 +13,8 @@ public class AppiumConfiguration {
 
     public AppiumConfiguration() {
         Gson gson = new Gson();
-        try {
-            config = gson.fromJson(new FileReader("src/test/java/resources/appium-config.json"), JsonObject.class);
+        try {            
+            config = gson.fromJson(new FileReader(Urls.APPIUM_CONFIG), JsonObject.class);
             capabilities = new DesiredCapabilities();
             capabilities.setCapability("platformName", config.get("platformName").getAsString());
             capabilities.setCapability("platformVersion", config.get("platformVersion").getAsString());
